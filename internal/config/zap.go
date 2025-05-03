@@ -45,6 +45,8 @@ func NewLogger(viper *viper.Viper) *AppLoggers {
 
 	if viper.GetString("env") == "development" {
 		encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	} else {
+		encoderConfig.EncodeLevel = zapcore.LowercaseLevelEncoder
 	}
 
 	fileWriter := zapcore.AddSync(lumberjackLogger)
