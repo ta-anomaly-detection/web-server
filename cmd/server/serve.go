@@ -14,7 +14,7 @@ var serveCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		viperConfig := config.NewViper()
 		log := config.NewLogger(viperConfig)
-		db := config.NewDatabase(viperConfig, log)
+		db := config.NewDatabase(viperConfig, log.App)
 		validate := config.NewValidator(viperConfig)
 		app := config.NewEcho(viperConfig)
 
@@ -29,7 +29,7 @@ var serveCmd = &cobra.Command{
 		webPort := viperConfig.GetInt("web.port")
 		err := app.Start(fmt.Sprintf(":%d", webPort))
 		if err != nil {
-			log.Fatal("Failed to start server", zap.Error(err))
+			log.App.Fatal("Failed to start server", zap.Error(err))
 		}
 	},
 }

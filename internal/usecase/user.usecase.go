@@ -37,13 +37,13 @@ func (c *UserUseCase) Verify(ctx context.Context, request *dto.VerifyUserRequest
 
 	err := c.Validate.Struct(request)
 	if err != nil {
-		c.Log.Warn("Invalid request body : %+v", zap.Error(err))
+		c.Log.Warn("Invalid request body", zap.Error(err))
 		return nil, echo.ErrBadRequest
 	}
 
 	user := new(entity.User)
 	if err := c.UserRepository.FindByToken(tx, user, request.Token); err != nil {
-		c.Log.Warn("Failed find user by token : %+v", zap.Error(err))
+		c.Log.Warn("Failed find user by token", zap.Error(err))
 		return nil, echo.ErrNotFound
 	}
 
@@ -61,24 +61,24 @@ func (c *UserUseCase) Create(ctx context.Context, request *dto.RegisterUserReque
 
 	err := c.Validate.Struct(request)
 	if err != nil {
-		c.Log.Warn("Invalid request body : %+v", zap.Error(err))
+		c.Log.Warn("Invalid request body", zap.Error(err))
 		return nil, echo.ErrBadRequest
 	}
 
 	total, err := c.UserRepository.CountById(tx, request.ID)
 	if err != nil {
-		c.Log.Warn("Failed count user from database : %+v", zap.Error(err))
+		c.Log.Warn("Failed count user from database", zap.Error(err))
 		return nil, echo.ErrInternalServerError
 	}
 
 	if total > 0 {
-		c.Log.Warn("User already exists : %+v", zap.Error(err))
+		c.Log.Warn("User already exists")
 		return nil, echo.ErrConflict
 	}
 
 	password, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 	if err != nil {
-		c.Log.Warn("Failed to generate bcrype hash : %+v", zap.Error(err))
+		c.Log.Warn("Failed to generate bcrype hash", zap.Error(err))
 		return nil, echo.ErrInternalServerError
 	}
 
@@ -89,12 +89,12 @@ func (c *UserUseCase) Create(ctx context.Context, request *dto.RegisterUserReque
 	}
 
 	if err := c.UserRepository.Create(tx, user); err != nil {
-		c.Log.Warn("Failed create user to database : %+v", zap.Error(err))
+		c.Log.Warn("Failed create user to database", zap.Error(err))
 		return nil, echo.ErrInternalServerError
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		c.Log.Warn("Failed commit transaction : %+v", zap.Error(err))
+		c.Log.Warn("Failed commit transaction", zap.Error(err))
 		return nil, echo.ErrInternalServerError
 	}
 
@@ -106,29 +106,29 @@ func (c *UserUseCase) Login(ctx context.Context, request *dto.LoginUserRequest) 
 	defer tx.Rollback()
 
 	if err := c.Validate.Struct(request); err != nil {
-		c.Log.Warn("Invalid request body  : %+v", zap.Error(err))
+		c.Log.Warn("Invalid request body ", zap.Error(err))
 		return nil, echo.ErrBadRequest
 	}
 
 	user := new(entity.User)
 	if err := c.UserRepository.FindById(tx, user, request.ID); err != nil {
-		c.Log.Warn("Failed find user by id : %+v", zap.Error(err))
+		c.Log.Warn("Failed find user by id", zap.Error(err))
 		return nil, echo.ErrUnauthorized
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
-		c.Log.Warn("Failed to compare user password with bcrype hash : %+v", zap.Error(err))
+		c.Log.Warn("Failed to compare user password with bcrype hash", zap.Error(err))
 		return nil, echo.ErrUnauthorized
 	}
 
 	user.Token = uuid.New().String()
 	if err := c.UserRepository.Update(tx, user); err != nil {
-		c.Log.Warn("Failed save user : %+v", zap.Error(err))
+		c.Log.Warn("Failed save user", zap.Error(err))
 		return nil, echo.ErrInternalServerError
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		c.Log.Warn("Failed commit transaction : %+v", zap.Error(err))
+		c.Log.Warn("Failed commit transaction", zap.Error(err))
 		return nil, echo.ErrInternalServerError
 	}
 
@@ -140,18 +140,18 @@ func (c *UserUseCase) Current(ctx context.Context, request *dto.GetUserRequest) 
 	defer tx.Rollback()
 
 	if err := c.Validate.Struct(request); err != nil {
-		c.Log.Warn("Invalid request body : %+v", zap.Error(err))
+		c.Log.Warn("Invalid request body", zap.Error(err))
 		return nil, echo.ErrBadRequest
 	}
 
 	user := new(entity.User)
 	if err := c.UserRepository.FindById(tx, user, request.ID); err != nil {
-		c.Log.Warn("Failed find user by id : %+v", zap.Error(err))
+		c.Log.Warn("Failed find user by id", zap.Error(err))
 		return nil, echo.ErrNotFound
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		c.Log.Warn("Failed commit transaction : %+v", zap.Error(err))
+		c.Log.Warn("Failed commit transaction", zap.Error(err))
 		return nil, echo.ErrInternalServerError
 	}
 
@@ -163,25 +163,25 @@ func (c *UserUseCase) Logout(ctx context.Context, request *dto.LogoutUserRequest
 	defer tx.Rollback()
 
 	if err := c.Validate.Struct(request); err != nil {
-		c.Log.Warn("Invalid request body : %+v", zap.Error(err))
+		c.Log.Warn("Invalid request body", zap.Error(err))
 		return false, echo.ErrBadRequest
 	}
 
 	user := new(entity.User)
 	if err := c.UserRepository.FindById(tx, user, request.ID); err != nil {
-		c.Log.Warn("Failed find user by id : %+v", zap.Error(err))
+		c.Log.Warn("Failed find user by id", zap.Error(err))
 		return false, echo.ErrNotFound
 	}
 
 	user.Token = ""
 
 	if err := c.UserRepository.Update(tx, user); err != nil {
-		c.Log.Warn("Failed save user : %+v", zap.Error(err))
+		c.Log.Warn("Failed save user", zap.Error(err))
 		return false, echo.ErrInternalServerError
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		c.Log.Warn("Failed commit transaction : %+v", zap.Error(err))
+		c.Log.Warn("Failed commit transaction", zap.Error(err))
 		return false, echo.ErrInternalServerError
 	}
 
@@ -193,13 +193,13 @@ func (c *UserUseCase) Update(ctx context.Context, request *dto.UpdateUserRequest
 	defer tx.Rollback()
 
 	if err := c.Validate.Struct(request); err != nil {
-		c.Log.Warn("Invalid request body : %+v", zap.Error(err))
+		c.Log.Warn("Invalid request body", zap.Error(err))
 		return nil, echo.ErrBadRequest
 	}
 
 	user := new(entity.User)
 	if err := c.UserRepository.FindById(tx, user, request.ID); err != nil {
-		c.Log.Warn("Failed find user by id : %+v", zap.Error(err))
+		c.Log.Warn("Failed find user by id", zap.Error(err))
 		return nil, echo.ErrNotFound
 	}
 
@@ -210,19 +210,19 @@ func (c *UserUseCase) Update(ctx context.Context, request *dto.UpdateUserRequest
 	if request.Password != "" {
 		password, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 		if err != nil {
-			c.Log.Warn("Failed to generate bcrype hash : %+v", zap.Error(err))
+			c.Log.Warn("Failed to generate bcrype hash", zap.Error(err))
 			return nil, echo.ErrInternalServerError
 		}
 		user.Password = string(password)
 	}
 
 	if err := c.UserRepository.Update(tx, user); err != nil {
-		c.Log.Warn("Failed save user : %+v", zap.Error(err))
+		c.Log.Warn("Failed save user", zap.Error(err))
 		return nil, echo.ErrInternalServerError
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		c.Log.Warn("Failed commit transaction : %+v", zap.Error(err))
+		c.Log.Warn("Failed commit transaction", zap.Error(err))
 		return nil, echo.ErrInternalServerError
 	}
 

@@ -25,13 +25,13 @@ func NewUserController(useCase *usecase.UserUseCase, logger *zap.Logger) *UserCo
 func (c *UserController) Register(ctx echo.Context) error {
 	request := new(dto.RegisterUserRequest)
 	if err := ctx.Bind(request); err != nil {
-		c.Log.Warn("Failed to parse request body : %+v", zap.Error(err))
+		c.Log.Warn("Failed to parse request body", zap.Error(err))
 		return echo.ErrBadRequest
 	}
 
 	response, err := c.UseCase.Create(ctx.Request().Context(), request)
 	if err != nil {
-		c.Log.Warn("Failed to register user : %+v", zap.Error(err))
+		c.Log.Warn("Failed to register user", zap.Error(err))
 		return err
 	}
 
@@ -42,13 +42,13 @@ func (c *UserController) Login(ctx echo.Context) error {
 	request := new(dto.LoginUserRequest)
 
 	if err := ctx.Bind(request); err != nil {
-		c.Log.Warn("Failed to parse request body : %+v", zap.Error(err))
+		c.Log.Warn("Failed to parse request body", zap.Error(err))
 		return echo.ErrBadRequest
 	}
 
 	response, err := c.UseCase.Login(ctx.Request().Context(), request)
 	if err != nil {
-		c.Log.Warn("Failed to login user : %+v", zap.Error(err))
+		c.Log.Warn("Failed to login user", zap.Error(err))
 		return err
 	}
 
@@ -92,7 +92,7 @@ func (c *UserController) Update(ctx echo.Context) error {
 
 	request := new(dto.UpdateUserRequest)
 	if err := ctx.Bind(request); err != nil {
-		c.Log.Warn("Failed to parse request body : %+v", zap.Error(err))
+		c.Log.Warn("Failed to parse request body", zap.Error(err))
 		return echo.ErrBadRequest
 	}
 

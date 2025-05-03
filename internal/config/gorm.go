@@ -33,7 +33,6 @@ func BuildDSN(viper *viper.Viper, forLibPQ bool) string {
 	)
 }
 
-	
 func NewDatabase(viper *viper.Viper, log *zap.Logger) *gorm.DB {
 	idleConnection := viper.GetInt("database.pool.idle")
 	maxConnection := viper.GetInt("database.pool.max")
@@ -44,7 +43,6 @@ func NewDatabase(viper *viper.Viper, log *zap.Logger) *gorm.DB {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.New(&zapWriter{Logger: log}, logger.Config{
 			SlowThreshold:             time.Second * 5,
-			Colorful:                  false,
 			IgnoreRecordNotFoundError: true,
 			ParameterizedQueries:      true,
 			LogLevel:                  logger.Info,

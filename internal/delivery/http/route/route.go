@@ -6,14 +6,16 @@ import (
 )
 
 type RouteConfig struct {
-	App               *echo.Echo
-	UserController    *http.UserController
-	ContactController *http.ContactController
-	AddressController *http.AddressController
-	AuthMiddleware    echo.MiddlewareFunc
+	App                 *echo.Echo
+	UserController      *http.UserController
+	ContactController   *http.ContactController
+	AddressController   *http.AddressController
+	AuthMiddleware      echo.MiddlewareFunc
+	ZapLoggerMiddleware echo.MiddlewareFunc
 }
 
 func (c *RouteConfig) Setup() {
+	c.App.Use(c.ZapLoggerMiddleware)
 	c.SetupGuestRoute()
 	c.SetupAuthRoute()
 }
@@ -24,20 +26,21 @@ func (c *RouteConfig) SetupGuestRoute() {
 }
 
 func (c *RouteConfig) SetupAuthRoute() {
-	c.App.Use(c.AuthMiddleware)
-	c.App.DELETE("/api/users", c.UserController.Logout)
-	c.App.PATCH("/api/users/_current", c.UserController.Update)
-	c.App.GET("/api/users/_current", c.UserController.Current)
+	authGroup := c.App.Group("/api", c.AuthMiddleware)
 
-	c.App.GET("/api/contacts", c.ContactController.List)
-	c.App.POST("/api/contacts", c.ContactController.Create)
-	c.App.PUT("/api/contacts/:contactId", c.ContactController.Update)
-	c.App.GET("/api/contacts/:contactId", c.ContactController.Get)
-	c.App.DELETE("/api/contacts/:contactId", c.ContactController.Delete)
+	authGroup.DELETE("/users", c.UserController.Logout)
+	authGroup.PATCH("/users/_current", c.UserController.Update)
+	authGroup.GET("/users/_current", c.UserController.Current)
 
-	c.App.GET("/api/contacts/:contactId/addresses", c.AddressController.List)
-	c.App.POST("/api/contacts/:contactId/addresses", c.AddressController.Create)
-	c.App.PUT("/api/contacts/:contactId/addresses/:addressId", c.AddressController.Update)
-	c.App.GET("/api/contacts/:contactId/addresses/:addressId", c.AddressController.Get)
-	c.App.DELETE("/api/contacts/:contactId/addresses/:addressId", c.AddressController.Delete)
+	authGroup.GET("/contacts", c.ContactController.List)
+	authGroup.POST("/contacts", c.ContactController.Create)
+	authGroup.PUT("/contacts/:contactId", c.ContactController.Update)
+	authGroup.GET("/contacts/:contactId", c.ContactController.Get)
+	authGroup.DELETE("/contacts/:contactId", c.ContactController.Delete)
+
+	authGroup.GET("/contacts/:contactId/addresses", c.AddressController.List)
+	authGroup.POST("/contacts/:contactId/addresses", c.AddressController.Create)
+	authGroup.PUT("/contacts/:contactId/addresses/:addressId", c.AddressController.Update)
+	authGroup.GET("/contacts/:contactId/addresses/:addressId", c.AddressController.Get)
+	authGroup.DELETE("/contacts/:contactId/addresses/:addressId", c.AddressController.Delete)
 }
