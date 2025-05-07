@@ -16,7 +16,11 @@ services:
       - DB_NAME=${DB_NAME}
     ports:
       - "3000:3000"
+    volumes:
+      - ./app/logs:/app/logs
     restart: unless-stopped
+    networks:
+      - app-network
 
   web-server-db:
     image: postgres:15
@@ -30,6 +34,29 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
+    networks:
+      - app-network
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.13.1
+    container_name: filebeat
+    user: root
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./app/logs:/app/logs:ro
+      - filebeat-data:/usr/share/filebeat/data 
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+      - KAFKA_TOPIC=http-logs
+    command: [ "--strict.perms=false" ]
+    depends_on:
+      - web-server-app
+    networks:
+      - app-network
 
 volumes:
   pgdata:
+  filebeat-data:
+
+networks:
+  app-network:
