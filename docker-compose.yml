@@ -17,7 +17,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./app/logs:/app/logs
+      - ./app/logs:/var/app/logs
     restart: unless-stopped
     networks:
       - app-network
@@ -43,20 +43,24 @@ services:
     user: root
     volumes:
       - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - ./app/logs:/app/logs:ro
+      - ./app/logs:/var/app/logs:ro
       - filebeat-data:/usr/share/filebeat/data 
     environment:
-      - KAFKA_BROKERS=kafka:9092
-      - KAFKA_TOPIC=http-logs
+      - KAFKA_BROKERS=kafka-server:9092
+      - KAFKA_TOPIC=web-server-logs
     command: [ "--strict.perms=false" ]
     depends_on:
       - web-server-app
     networks:
       - app-network
+      - kafka-network
 
 volumes:
   pgdata:
-  filebeat-data:
+  filebeat-data: {}
 
 networks:
   app-network:
+    driver: bridge
+  kafka-network:
+    external: true

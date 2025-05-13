@@ -2,7 +2,7 @@ filebeat.inputs:
   - type: log
     enabled: true
     paths:
-      - /app/logs/web-server.log
+      - /var/app/logs/*.log
 
 output.kafka:
   enabled: true
@@ -19,7 +19,7 @@ logging:
   level: info
   to_files: true
   files:
-    path: /usr/share/filebeat/logs
+    path: /var/log/filebeat
     name: filebeat
     keepfiles: 7
     permissions: 0644
