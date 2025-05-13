@@ -17,7 +17,7 @@ type AppLoggers struct {
 func NewLogger(viper *viper.Viper) *AppLoggers {
 	logFilePath := viper.GetString("log.filePath")
 	if logFilePath == "" {
-		logFilePath = "app/logs/web-server.log"
+		logFilePath = "/var/app/logs/web-server.log"
 	}
 
 	lumberjackLogger := &lumberjack.Logger{
